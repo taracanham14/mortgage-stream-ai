@@ -53,7 +53,7 @@ graph LR
     UserJSON[("Raw JSON")]:::data
     PrivacyShield["Privacy Shield<br>(Presidio)"]:::gateway
     
-    subgraph UI ["Client Interface"]
+    subgraph UI ["Client UI"]
         WebDashboard["Web Dashboard"]:::client
         HumanDecision["Human Underwriter"]:::client
     end
@@ -82,7 +82,7 @@ graph LR
 
     %% Flows and connections
     Start --> WebDashboard
-    WebDashboard -->|1. Upload| FAPIServer
+    WebDashboard <-->|1. Upload & 5. Render| FAPIServer
     FAPIServer -->|2. Preprocess| PrivacyShield
     PrivacyShield -->|3. Scrubbed Payload| Orchestrator
     
@@ -93,7 +93,6 @@ graph LR
     
     %% Responses
     Compliance -->|4. Return Audit Log| FAPIServer
-    FAPIServer -->|5. Render UI| WebDashboard
     WebDashboard -->|6. Approve/Refer| HumanDecision
 ```
 
