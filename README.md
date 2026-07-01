@@ -170,6 +170,8 @@ mortgage-stream-ai/
 ├── data/                       # Mock Application Payloads
 │   ├── standard_applicant.json # Employed PAYE applicant
 │   └── complex_applicant.json  # Self-employed director with adverse credit
+├── evals/                      # Evaluation Suite
+│   └── eval_audit_log.py       # LLM-as-Judge E2E Swarm Evaluation
 ├── mortgage_agents/            # Agent swarm packages
 │   ├── __init__.py             # Package entrypoint
 │   ├── agent.py                # Swarm SequentialAgent setup
@@ -192,3 +194,22 @@ mortgage-stream-ai/
 ├── README.md                   # System documentation (This file)
 └── requirements.txt            # System dependencies
 ```
+
+---
+
+## 8. Testing and Evaluation
+
+The project features a two-tiered testing and validation pipeline to ensure the correctness of both deterministic rules and non-deterministic agent swarm completions.
+
+### 8.1. Core Unit Tests
+To run the local unit tests (validating deterministic affordability logic, risk-routing classifications, and Presidio PII redaction guarantees), execute:
+```bash
+python -m pytest
+```
+
+### 8.2. E2E Swarm Evaluation (LLM-as-Judge)
+To run the end-to-end evaluation suite (running standard and complex applicants through the full GDPR Privacy Shield and ADK sequential swarm, and scoring the generated audit logs against Gherkin scenarios using an automated LLM Judge), run:
+```bash
+python evals/eval_audit_log.py
+```
+*Note: This script dynamically detects if `GOOGLE_GENAI_USE_VERTEXAI=TRUE` is configured in your `.env`. If using Vertex AI, it will run instantly; otherwise, it will space executions out using safe delays to comply with the 5 RPM limits of the Developer Gemini API free tier.*
