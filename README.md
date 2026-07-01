@@ -45,8 +45,10 @@ graph LR
     classDef agent fill:#0369a1,stroke:#0ea5e9,stroke-width:2px,color:#e0f2fe;
     classDef tool fill:#78350f,stroke:#d97706,stroke-width:2px,color:#fef3c7;
     classDef data fill:#14532d,stroke:#22c55e,stroke-width:1px,color:#dcfce7;
+    classDef start fill:#6d28d9,stroke:#a78bfa,stroke-width:2px,color:#ffffff;
     
     %% Nodes definition
+    Start(["Start Here 🚩"]):::start
     UserJSON[("Raw JSON")]:::data
     PrivacyShield["Privacy Shield<br>(Presidio)"]:::gateway
     
@@ -78,6 +80,7 @@ graph LR
     end
 
     %% Flows and connections
+    Start --> WebDashboard
     WebDashboard -->|1. Upload| FAPIServer
     FAPIServer -->|2. Preprocess| PrivacyShield
     PrivacyShield -->|3. Scrubbed Payload| Orchestrator
