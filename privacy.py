@@ -77,9 +77,36 @@ try:
         supported_language="en"
     )
 
+    # Custom PatternRecognizer for UK National Insurance Number (NINO):
+    # Matches two prefix letters (allowing test prefixes like QQ), 6 digits, and a suffix letter.
+    nino_pattern = Pattern(
+        name="uk_nino_pattern",
+        regex=r"\b[A-CEGHJ-PQR-TW-Z][A-CEGHJ-NPQR-TW-Z]\s?\d{2}\s?\d{2}\s?\d{2}\s?[A-D]\b",
+        score=0.85
+    )
+    nino_recognizer = PatternRecognizer(
+        supported_entity="UK_NINO",
+        patterns=[nino_pattern],
+        supported_language="en"
+    )
+
+    # Custom PatternRecognizer for UK Postcodes:
+    postcode_pattern = Pattern(
+        name="uk_postcode_pattern",
+        regex=r"\b[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}\b",
+        score=0.85
+    )
+    postcode_recognizer = PatternRecognizer(
+        supported_entity="UK_POSTCODE",
+        patterns=[postcode_pattern],
+        supported_language="en"
+    )
+
     # Register the custom recognizers with the analyzer registry
     analyzer.registry.add_recognizer(sort_code_recognizer)
     analyzer.registry.add_recognizer(account_number_recognizer)
+    analyzer.registry.add_recognizer(nino_recognizer)
+    analyzer.registry.add_recognizer(postcode_recognizer)
 
     PRESIDIO_AVAILABLE = True
 
@@ -197,6 +224,7 @@ def scrub_application_data(raw_json_string: str) -> str:
                 "UK_NINO": OperatorConfig("replace", {"new_value": "[REDACTED_NINO]"}),
                 "UK_SORT_CODE": OperatorConfig("replace", {"new_value": "[REDACTED_SORTCODE]"}),
                 "UK_ACCOUNT_NUMBER": OperatorConfig("replace", {"new_value": "[REDACTED_ACCOUNT]"}),
+                "UK_POSTCODE": OperatorConfig("replace", {"new_value": "[REDACTED_POSTCODE]"}),
             }
 
             def walk_and_scrub(data):
@@ -209,7 +237,7 @@ def scrub_application_data(raw_json_string: str) -> str:
                     results = analyzer.analyze(
                         text=data,
                         language="en",
-                        entities=["UK_NINO", "PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "UK_SORT_CODE", "UK_ACCOUNT_NUMBER"]
+                        entities=["UK_NINO", "PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "UK_SORT_CODE", "UK_ACCOUNT_NUMBER", "UK_POSTCODE"]
                     )
                     
                     # Anonymize using our custom operators

@@ -50,8 +50,10 @@ if project_root not in sys.path:
 # Load environment variables (populates GOOGLE_API_KEY from .env if present in workspace)
 load_dotenv()
 
-# Force tools to run slowly to stay under the 5 RPM rate limit of the Gemini free tier
-os.environ["MORTGAGESTREAM_SLOW_TOOLS"] = "1"
+# Force tools to run slowly to stay under the 5 RPM rate limit of the Gemini free tier if not using Vertex AI
+use_vertex = os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").upper() == "TRUE"
+if not use_vertex:
+    os.environ["MORTGAGESTREAM_SLOW_TOOLS"] = "1"
 
 from privacy import scrub_application_data
 from mortgage_agents.agent import root_agent
@@ -60,11 +62,15 @@ from google.adk.sessions import InMemorySessionService
 from google.genai import types
 from google import genai
 
-# Assert that the API key is present
-api_key = os.environ.get("GOOGLE_API_KEY")
-if not api_key:
-    print("Error: GOOGLE_API_KEY environment variable is not set.", file=sys.stderr)
-    sys.exit(1)
+# Assert configuration for GenAI client
+use_vertex = os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").upper() == "TRUE"
+api_key = None
+if not use_vertex:
+    api_key = os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        print("Error: GOOGLE_API_KEY environment variable is not set.", file=sys.stderr)
+        sys.exit(1)
+
 
 
 # =====================================================================
@@ -160,9 +166,12 @@ async def run_underwriting_pipeline_with_retry(
         try:
             return await run_underwriting_pipeline(filepath, runner, session_service)
         except Exception as e:
+            print(f"DEBUG: Exception caught during pipeline execution: {e}", file=sys.stderr)
+            import traceback
+            traceback.print_exc()
             err_str = str(e).upper()
-            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
-                print(f"Rate limit hit. Sleeping for {backoff_seconds} seconds before retry (Attempt {attempt+1}/{max_retries})...")
+            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "503" in err_str or "UNAVAILABLE" in err_str:
+                print(f"Temporary API error (429/503). Sleeping for {backoff_seconds} seconds before retry (Attempt {attempt+1}/{max_retries})...")
                 await asyncio.sleep(backoff_seconds)
             else:
                 raise e
@@ -232,8 +241,8 @@ def evaluate_with_llm_judge_with_retry(
             return evaluate_with_llm_judge(client, applicant_name, gherkin_scenario, audit_log)
         except Exception as e:
             err_str = str(e).upper()
-            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
-                print(f"Rate limit hit during judge evaluation. Sleeping for {backoff_seconds} seconds before retry (Attempt {attempt+1}/{max_retries})...")
+            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "503" in err_str or "UNAVAILABLE" in err_str:
+                print(f"Temporary API error (429/503) during judge evaluation. Sleeping for {backoff_seconds} seconds before retry (Attempt {attempt+1}/{max_retries})...")
                 time.sleep(backoff_seconds)
             else:
                 raise e
@@ -277,29 +286,35 @@ async def main():
     )
 
     # Initialize GenAI Client for the Judge
-    client = genai.Client(api_key=api_key)
+    if use_vertex:
+        client = genai.Client()
+    else:
+        client = genai.Client(api_key=api_key)
 
     # Execute underwriting pipeline with rate limit handling
     print("Running underwriting swarm on standard_applicant.json...")
     standard_log = await run_underwriting_pipeline_with_retry("data/standard_applicant.json", runner, session_service)
     
-    # Sleep to fully replenish the rate limit bucket
-    print("\nSleeping 90 seconds to clear Gemini free-tier rate limits...")
-    await asyncio.sleep(90)
+    # Sleep to fully replenish the rate limit bucket if not using Vertex AI
+    if not use_vertex:
+        print("\nSleeping 90 seconds to clear Gemini free-tier rate limits...")
+        await asyncio.sleep(90)
     
     print("\nRunning underwriting swarm on complex_applicant.json...")
     complex_log = await run_underwriting_pipeline_with_retry("data/complex_applicant.json", runner, session_service)
 
-    # Sleep to fully replenish the rate limit bucket before judge runs
-    print("\nSleeping 90 seconds to clear Gemini free-tier rate limits...")
-    await asyncio.sleep(90)
+    # Sleep to fully replenish the rate limit bucket before judge runs if not using Vertex AI
+    if not use_vertex:
+        print("\nSleeping 90 seconds to clear Gemini free-tier rate limits...")
+        await asyncio.sleep(90)
 
     # Execute LLM Judge evaluation with rate limit handling
     print("\nRunning LLM-as-Judge evaluations...")
     standard_score = evaluate_with_llm_judge_with_retry(client, "Standard PAYE (Oliver Twist)", scenarios["standard"], standard_log)
     
-    print("\nSleeping 90 seconds to clear Gemini free-tier rate limits...")
-    await asyncio.sleep(90)
+    if not use_vertex:
+        print("\nSleeping 90 seconds to clear Gemini free-tier rate limits...")
+        await asyncio.sleep(90)
     
     complex_score = evaluate_with_llm_judge_with_retry(client, "Complex Self-Employed (Ebenezer Scrooge)", scenarios["complex"], complex_log)
 
