@@ -37,7 +37,7 @@ The system consists of the following components:
 ## 4. Architecture Flowchart
 
 ```mermaid
-graph TD
+graph LR
     %% Define color palette and styles
     classDef default fill:#1e293b,stroke:#334155,stroke-width:1px,color:#f8fafc;
     classDef client fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#38bdf8;
@@ -47,50 +47,50 @@ graph TD
     classDef data fill:#14532d,stroke:#22c55e,stroke-width:1px,color:#dcfce7;
     
     %% Nodes definition
-    UserJSON[("Raw Applicant JSON")]:::data
-    PrivacyShield["GDPR Privacy Shield<br><i>(Microsoft Presidio)</i>"]:::gateway
+    UserJSON[("Raw JSON")]:::data
+    PrivacyShield["Privacy Shield<br>(Presidio)"]:::gateway
     
     subgraph UI ["Client Interface"]
-        WebDashboard["Sleek Single-Page Dashboard<br><i>(HTML5/CSS3)</i>"]:::client
-        HumanDecision["Human Underwriter Sign-off<br><i>(Final Decision Gate)</i>"]:::client
+        WebDashboard["Web Dashboard"]:::client
+        HumanDecision["Human Underwriter"]:::client
     end
     
-    subgraph FastAPIApp ["FastAPI Web Server"]
-        FAPIServer["Async FastAPI Backend<br><i>(main.py)</i>"]
+    subgraph FastAPIApp ["FastAPI Server"]
+        FAPIServer["FastAPI Backend"]
     end
     
     subgraph Swarm ["Agent Swarm (Vertex AI)"]
-        Orchestrator["Orchestrator Agent<br><i>(Risk Routing & Classification)</i>"]:::agent
-        Analyst["Analyst Agent<br><i>(Financial & Affordability Checks)</i>"]:::agent
-        Compliance["Compliance Agent<br><i>(Handbook Audit & Log Generation)</i>"]:::agent
+        Orchestrator["Orchestrator Agent"]:::agent
+        Analyst["Analyst Agent"]:::agent
+        Compliance["Compliance Agent"]:::agent
         
-        Orchestrator -->|2. Route Profile| Analyst
-        Analyst -->|4. Analyze Affordability| Compliance
+        Orchestrator -->|Route| Analyst
+        Analyst -->|Check| Compliance
     end
 
     subgraph MCPServer ["MCP Server (stdio)"]
-        AffordabilityTool["calculate_affordability<br><i>(DTI & Band Math)</i>"]:::tool
-        FCATool["query_fca_handbook<br><i>(Mock Handbook Citations)</i>"]:::tool
+        AffordabilityTool["calculate_affordability"]:::tool
+        FCATool["query_fca_handbook"]:::tool
     end
 
-    subgraph DirectTools ["Direct Python Tools"]
-        RiskTool["classify_application_risk<br><i>(Deterministic Risk Routing)</i>"]:::tool
+    subgraph DirectTools ["Direct Tools"]
+        RiskTool["classify_application_risk"]:::tool
     end
 
     %% Flows and connections
-    WebDashboard -->|1. Upload payload| FAPIServer
-    FAPIServer -->|JSON Payload| PrivacyShield
-    PrivacyShield -->|Anonymized JSON| Orchestrator
+    WebDashboard -->|1. Upload| FAPIServer
+    FAPIServer -->|2. Preprocess| PrivacyShield
+    PrivacyShield -->|3. Scrubbed Payload| Orchestrator
     
     %% Tool execution links
     Orchestrator <-->|Direct call| RiskTool
-    Analyst <-->|MCP ClientRequest over stdio| AffordabilityTool
-    Compliance <-->|MCP ClientRequest over stdio| FCATool
+    Analyst <-->|MCP Call| AffordabilityTool
+    Compliance <-->|MCP Call| FCATool
     
     %% Responses
-    Compliance -->|5. Return audit log JSON| FAPIServer
-    FAPIServer -->|Render logs & visual bands| WebDashboard
-    WebDashboard -->|6. Approve / Refer| HumanDecision
+    Compliance -->|4. Return Audit Log| FAPIServer
+    FAPIServer -->|5. Render UI| WebDashboard
+    WebDashboard -->|6. Approve/Refer| HumanDecision
 ```
 
 ---
