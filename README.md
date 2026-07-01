@@ -84,8 +84,8 @@ graph TD
     
     %% Tool execution links
     Orchestrator <-->|Direct call| RiskTool
-    Analyst <-->|MCP ClientRequest (stdio)| AffordabilityTool
-    Compliance <-->|MCP ClientRequest (stdio)| FCATool
+    Analyst <-->|MCP ClientRequest over stdio| AffordabilityTool
+    Compliance <-->|MCP ClientRequest over stdio| FCATool
     
     %% Responses
     Compliance -->|5. Return audit log JSON| FAPIServer
