@@ -47,6 +47,9 @@ graph LR
     classDef tool fill:#78350f,stroke:#d97706,stroke-width:2px,color:#fef3c7;
     classDef data fill:#14532d,stroke:#22c55e,stroke-width:1px,color:#dcfce7;
     classDef start fill:#6d28d9,stroke:#a78bfa,stroke-width:2px,color:#ffffff;
+    classDef eval fill:#581c87,stroke:#c084fc,stroke-width:2px,color:#f3e8ff;
+    classDef pass fill:#064e3b,stroke:#4ade80,stroke-width:1px,color:#d1fae5;
+    classDef fail fill:#7f1d1d,stroke:#f87171,stroke-width:1px,color:#fee2e2;
     
     %% Nodes definition
     Start(["Start Here 🚩"]):::start
@@ -80,6 +83,20 @@ graph LR
         RiskTool["classify_application_risk"]:::tool
     end
 
+    subgraph EvalSuite ["Evaluation Suite (eval_audit_log.py)"]
+        EvalRunner["Eval Runner"]:::eval
+        LLMJudge["LLM Judge<br>(Gemini 2.5 Flash)"]:::eval
+        BuildGate{"Quality Gate<br>(Score >= 3?)"}:::eval
+        ExitPass[("Exit 0<br>(Success)")]:::pass
+        ExitFail[("Exit 1<br>(Failure)")]:::fail
+        
+        EvalRunner -->|Send Log & Rubric| LLMJudge
+        LLMJudge -->|Scorecard JSON| EvalRunner
+        EvalRunner --> BuildGate
+        BuildGate -->|Yes| ExitPass
+        BuildGate -->|No| ExitFail
+    end
+
     %% Flows and connections
     Start --> WebDashboard
     WebDashboard <-->|1. Upload & 5. Render| FAPIServer
@@ -94,6 +111,10 @@ graph LR
     %% Responses
     Compliance -->|4. Return Audit Log| FAPIServer
     WebDashboard -->|6. Approve/Refer| HumanDecision
+
+    %% Evaluation triggers (dashed lines for test environment)
+    EvalRunner -.->|Triggers pipeline| PrivacyShield
+    Compliance -.->|Delivers final log| EvalRunner
 ```
 
 ---
