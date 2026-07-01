@@ -37,6 +37,7 @@ The system consists of the following components:
 ## 4. Architecture Flowchart
 
 ```mermaid
+%%{init: {'theme': 'dark', 'flowchart': {'nodeSpacing': 80, 'rankSpacing': 120}}}%%
 graph LR
     %% Define color palette and styles
     classDef default fill:#1e293b,stroke:#334155,stroke-width:1px,color:#f8fafc;
