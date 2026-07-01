@@ -1,0 +1,82 @@
+{
+  "personal_details": {
+    "title": "Mr",
+    "forename": "Oliver",
+    "surname": "Twist",
+    "previous_name": "",
+    "date_of_birth": "1990-04-15",
+    "sex": "Male",
+    "marital_status": "Single",
+    "nationality": "British",
+    "residency_status": "UK Resident",
+    "intended_retirement_age": 68,
+    "national_insurance_number": "QQ123456C",
+    "number_of_dependants": 0
+  },
+  "contact_details": {
+    "mobile_telephone": "07700900077",
+    "email": "oliver.twist@example.co.uk",
+    "current_address": "12 Grimmauld Place, London",
+    "postcode": "E1 6AN",
+    "residential_status": "private renter",
+    "time_at_address_years": 3.5
+  },
+  "bank_details": {
+    "bank_name": "Royal Bank of Scotland",
+    "account_number": "98765432",
+    "sort_code": "10-20-30",
+    "account_holder_name": "Oliver Twist"
+  },
+  "employment": {
+    "employment_status": "Employed",
+    "occupation": "Software Engineer",
+    "employer_name": "Tech Corp Ltd",
+    "time_in_role_years": 2.0,
+    "self_employment": null
+  },
+  "income": {
+    "gross_basic_income": 52000.0,
+    "guaranteed_overtime_bonus_commission": 0.0,
+    "variable_overtime_bonus_commission": 0.0,
+    "other_income": 0.0,
+    "other_income_source": ""
+  },
+  "monthly_commitments": [
+    {
+      "provider": "Barclaycard",
+      "commitment_type": "Credit card",
+      "balance_outstanding": 1200.0,
+      "monthly_repayment": 150.0,
+      "repay_on_completion": false
+    },
+    {
+      "provider": "Tesco Bank",
+      "commitment_type": "Loan",
+      "balance_outstanding": 8000.0,
+      "monthly_repayment": 300.0,
+      "repay_on_completion": false
+    }
+  ],
+  "adverse_credit": {
+    "adverse_credit_flags": []
+  },
+  "vulnerability": {
+    "vulnerability_flags": []
+  },
+  "property": {
+    "address": "42 Meadow Lane, London",
+    "postcode": "N2 9BJ",
+    "value": 350000.0,
+    "purchase_price": 350000.0,
+    "tenure": "Freehold",
+    "property_type": "House",
+    "deposit_amount": 70000.0,
+    "deposit_source": "Savings"
+  },
+  "mortgage_requirements": {
+    "purpose": "First-time buyer",
+    "loan_amount": 280000.0,
+    "term_years": 25,
+    "repayment_method": "Capital repayment"
+  }
+}

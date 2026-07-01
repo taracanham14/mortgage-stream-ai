@@ -1,0 +1,10 @@
+google-adk
+fastapi
+uvicorn[standard]
+python-multipart
+python-dotenv
+pytest
+mcp
+fastmcp
+presidio-analyzer
+presidio-anonymizer

@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MortgageStream AI — Underwriting Dashboard</title>
+    <!-- Import Outfit (headers/branding) and Inter (body/data fields) from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Modern CSS Variables & Resets */
+        :root {
+            --bg-primary: #05070c;
+            --bg-secondary: #0d111c;
+            --glass-bg: rgba(13, 20, 38, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --primary-glow: rgba(14, 165, 233, 0.15);
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --violet-glow: rgba(168, 85, 247, 0.08);
+            
+            --color-primary: #0ea5e9;    /* Sky Blue */
+            --color-accent: #6366f1;     /* Indigo */
+            --color-success: #10b981;    /* Emerald */
+            --color-warning: #f59e0b;    /* Amber */
+            --color-danger: #ef4444;     /* Rose */
+            
+            --transition-smooth: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: radial-gradient(120% 120% at 50% 0%, var(--bg-secondary) 0%, var(--bg-primary) 100%) no-repeat fixed;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 3rem 1.5rem;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Ambient Glow Spheres */
+        .ambient-glow {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: -1;
+        }
+        .glow-1 {
+            width: 450px;
+            height: 450px;
+            top: -150px;
+            left: -100px;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+        }
+        .glow-2 {
+            width: 500px;
+            height: 500px;
+            bottom: -150px;
+            right: -100px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+        }
+        .glow-3 {
+            width: 350px;
+            height: 350px;
+            top: 35%;
+            left: 55%;
+            background: radial-gradient(circle, var(--violet-glow) 0%, transparent 70%);
+        }
+
+        /* App Container */
+        .app-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Header styling */
+        .app-header {
+            text-align: center;
+            margin-bottom: 3.5rem;
+            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .app-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #ffffff 0%, #a5f3fc 45%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .app-tagline {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 300;
+            color: var(--text-secondary);
+            margin-bottom: 1.25rem;
+            letter-spacing: 0.01em;
+        }
+
+        .badge-shield {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            color: #34d399;
+            padding: 0.4rem 0.95rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.05);
+        }
+
+        .badge-shield svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+        }
+
+        /* Glassmorphic Card base */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2.25rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            transition: var(--transition-smooth);
+            margin-bottom: 2rem;
+            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.14);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.55);
+        }
+
+        .step-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Card Header & Number Badges */
+        .step-header {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.75rem;
+        }
+
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin-right: 1.15rem;
+            flex-shrink: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .step-badge.active {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+        }
+
+        .step-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.35rem;
+            letter-spacing: -0.01em;
+        }
+
+        .step-desc {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Step 1: File Dropzone */
+        .dropzone {
+            border: 2px dashed rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            background: rgba(15, 23, 42, 0.2);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--color-primary);
+            background: rgba(14, 165, 233, 0.04);
+            box-shadow: inset 0 0 20px rgba(14, 165, 233, 0.04);
+        }
+
+        .dropzone svg {
+            width: 44px;
+            height: 44px;
+            stroke: var(--text-muted);
+            margin-bottom: 1rem;
+            transition: var(--transition-smooth);
+        }
+
+        .dropzone:hover svg {
+            stroke: var(--color-primary);
+            transform: translateY(-2px);
+        }
+
+        .dropzone p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .dropzone .highlight {
+            color: var(--color-primary);
+            font-weight: 500;
+        }
+
+        .dropzone-filename {
+            margin-top: 0.85rem;
+            font-size: 0.875rem;
+            color: var(--color-primary);
+            font-weight: 500;
+            background: rgba(14, 165, 233, 0.1);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            display: inline-block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 0.95rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.65rem;
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.25);
+            width: 100%;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.45);
+            filter: brightness(1.15);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Step 1 Success Output */
+        .json-output-container {
+            margin-top: 1.75rem;
+            display: none;
+            animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .json-output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.65rem;
+        }
+
+        .json-output-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .json-output-badge {
+            font-size: 0.8rem;
+            color: var(--color-success);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .json-output-badge svg {
+            width: 12px;
+            height: 12px;
+            stroke: currentColor;
+        }
+
+        .json-pre-box {
+            background: rgba(5, 7, 12, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.25rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            max-height: 280px;
+            color: #cbd5e1;
+        }
+
+        /* Redacted Token Highlighting */
+        .redacted-token {
+            background: rgba(245, 158, 11, 0.12);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 600;
+            display: inline-block;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.05);
+            animation: pulseRedact 2.5s infinite ease-in-out;
+        }
+
+        @keyframes pulseRedact {
+            0%, 100% { box-shadow: 0 0 4px rgba(245, 158, 11, 0.08); border-color: rgba(245, 158, 11, 0.25); }
+            50% { box-shadow: 0 0 12px rgba(245, 158, 11, 0.35); border-color: rgba(245, 158, 11, 0.5); }
+        }
+
+        /* Step 2 Full-Card Loading Overlay */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(6, 9, 17, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .loading-overlay-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(14, 165, 233, 0.1);
+            border-top-color: var(--color-primary);
+            border-radius: 50%;
+            animation: spin 0.9s infinite linear;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.15);
+        }
+
+        .loading-overlay-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            text-align: center;
+            min-height: 24px;
+            padding: 0 1rem;
+            letter-spacing: 0.01em;
+        }
+
+        /* Slide-out Drawer & Backdrop */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 999;
+        }
+
+        .modal-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-drawer {
+            position: fixed;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: min(500px, 95vw);
+            height: 100vh;
+            background: rgba(10, 14, 26, 0.96);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border-left: 1px solid var(--glass-border);
+            box-shadow: -10px 0 45px rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-drawer.open {
+            transform: translateX(0);
+        }
+
+        .modal-header {
+            padding: 1.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.75rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            line-height: 1;
+            padding: 0.25rem;
+        }
+
+        .modal-close-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.75rem;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .modal-row {
+            margin-bottom: 1.75rem;
+            animation: fadeIn 0.4s ease both;
+        }
+
+        .modal-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 0.6rem;
+        }
+
+        /* Chips for Decisions / Classifications */
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.3rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .chip.green {
+            background: rgba(16, 185, 129, 0.12);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
+        }
+
+        .chip.amber {
+            background: rgba(245, 158, 11, 0.12);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.1);
+        }
+
+        .chip.red {
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.1);
+        }
+
+        /* Rules List */
+        .rules-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .rules-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.65rem;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            color: #cbd5e1;
+        }
+
+        .rules-list li::before {
+            content: "•";
+            color: var(--color-primary);
+            font-weight: bold;
+            font-size: 1.25rem;
+            position: absolute;
+            left: 0.35rem;
+            top: -0.15rem;
+        }
+
+        /* Human Underwriter Verification Controls */
+        .decision-section {
+            padding: 1.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(5, 7, 12, 0.5);
+        }
+
+        .decision-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .btn-decision {
+            border: none;
+            border-radius: 12px;
+            padding: 0.85rem 1.25rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-approve {
+            background: var(--color-success);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-approve:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+            filter: brightness(1.15);
+        }
+
+        .btn-reject {
+            background: var(--color-danger);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-reject:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.45);
+            filter: brightness(1.15);
+        }
+
+        .btn-decision:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-decision:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .decision-banner {
+            border-radius: 10px;
+            padding: 1.15rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            line-height: 1.45;
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .decision-banner.approved {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .decision-banner.rejected {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        /* Helper Spinners */
+        .spinner-sm {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 0.8s infinite linear;
+            display: inline-block;
+        }
+
+        /* Error Toasts */
+        .toast-container {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            background: rgba(239, 68, 68, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: #ffffff;
+            padding: 1rem 1.75rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+            z-index: 1100;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .toast-container.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast-container svg {
+            flex-shrink: 0;
+        }
+
+        /* Accessible Focus Outlines */
+        a:focus, button:focus, input:focus, .dropzone:focus {
+            outline: 2px solid var(--color-primary);
+            outline-offset: 4px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            body {
+                padding: 1.5rem 1rem;
+            }
+            .app-title {
+                font-size: 2.25rem;
+            }
+            .app-tagline {
+                font-size: 1rem;
+            }
+            .glass-card {
+                padding: 1.5rem;
+            }
+            .modal-drawer {
+                width: 100vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Radial Ambient Glowing Backdrops -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="ambient-glow glow-3"></div>
+
+    <div class="app-container">
+        <!-- Main Dashboard Header -->
+        <header class="app-header">
+            <h1 class="app-title">MortgageStream AI</h1>
+            <p class="app-tagline">UK mortgage decision-in-principle, FCA-explainable, human in the loop</p>
+            <div class="badge-shield" aria-label="Privacy Shield Gateway Active">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Privacy Shield Active
+            </div>
+        </header>
+
+        <main>
+            <!-- Step 1: Redact Card -->
+            <section class="glass-card step-card" id="step-1-card">
+                <div class="step-header">
+                    <span class="step-badge active" id="step-1-badge" aria-hidden="true">1</span>
+                    <div>
+                        <h2 class="step-title">Sanitise Application Data</h2>
+                        <p class="step-desc">Upload the applicant factfind JSON. The Privacy Shield gateway automatically redacts all PII (names, NINO, bank details) before transmission to AI agents.</p>
+                    </div>
+                </div>
+
+                <!-- Styled Dropzone Input -->
+                <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload Applicant JSON File">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <p>Drag and drop your applicant JSON here, or <span class="highlight">browse files</span></p>
+                    <div class="dropzone-filename" id="filename-display" style="display: none;"></div>
+                </div>
+                <input type="file" id="file-input" accept=".json" style="display: none;" aria-hidden="true">
+
+                <button class="btn-primary" id="btn-redact" disabled>
+                    <span>Run Privacy Shield</span>
+                </button>
+
+                <!-- Step 1 Output Panel -->
+                <div class="json-output-container" id="redacted-output-wrapper">
+                    <div class="json-output-header">
+                        <span class="json-output-title">Sanitised Gateway Payload</span>
+                        <span class="json-output-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            PII Redacted
+                        </span>
+                    </div>
+                    <pre class="json-pre-box" id="redacted-json-display"></pre>
+                </div>
+            </section>
+
+            <!-- Step 2: Underwrite Card -->
+            <section class="glass-card step-card" id="step-2-card">
+                <!-- Swarm Execution Loading Overlay -->
+                <div class="loading-overlay" id="loading-overlay">
+                    <div class="loading-overlay-spinner"></div>
+                    <div class="loading-overlay-text" id="loading-text">Initialising underwriting swarm...</div>
+                </div>
+
+                <div class="step-header">
+                    <span class="step-badge" id="step-2-badge" aria-hidden="true">2</span>
+                    <div>
+                        <h2 class="step-title">Run Underwriting Swarm</h2>
+                        <p class="step-desc">Initiate the sequential AI agent pipeline (Orchestrator, Analyst, and Compliance). The swarm evaluates risk categorisation, calculates DTI affordability, and audits FCA rules compliance.</p>
+                    </div>
+                </div>
+
+                <button class="btn-primary" id="btn-underwrite" disabled>
+                    <span>Run Underwriting Swarm</span>
+                </button>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal Backdrop -->
+    <div class="modal-backdrop" id="modal-backdrop" aria-hidden="true"></div>
+
+    <!-- Side Slide-Out Compliance Audit Drawer -->
+    <div class="modal-drawer" id="modal-drawer" role="dialog" aria-labelledby="drawer-title" aria-modal="true">
+        <div class="modal-header">
+            <h3 class="modal-title" id="drawer-title">Compliance Audit Log</h3>
+            <button class="modal-close-btn" id="modal-close-btn" aria-label="Close Audit Log">&times;</button>
+        </div>
+        
+        <div class="modal-body" id="modal-body">
+            <!-- Dynamic compliance content gets injected here -->
+        </div>
+        
+        <!-- Human Intervener (Sign-off Section) -->
+        <div class="decision-section" id="decision-section">
+            <div class="modal-label" style="margin-bottom: 0.75rem;">Human Underwriter Intervention</div>
+            <div class="decision-buttons" id="decision-buttons">
+                <button class="btn-decision btn-approve" id="btn-approve" aria-label="Approve application">
+                    <span>Approve</span>
+                </button>
+                <button class="btn-decision btn-reject" id="btn-reject" aria-label="Reject application">
+                    <span>Reject</span>
+                </button>
+            </div>
+            <div class="decision-banner" id="decision-banner"></div>
+        </div>
+    </div>
+
+    <!-- Error Toast Notification -->
+    <div class="toast-container" id="toast-container" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span id="toast-message">Error encountered.</span>
+    </div>
+
+    <script>
+        // State variables
+        let selectedFile = null;
+        let redactedJsonObj = null;
+        let redactedJsonStr = "";
+        let statusCycleInterval = null;
+
+        // Element DOM Queries
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('file-input');
+        const filenameDisplay = document.getElementById('filename-display');
+        const btnRedact = document.getElementById('btn-redact');
+        const btnUnderwrite = document.getElementById('btn-underwrite');
+        const redactedOutputWrapper = document.getElementById('redacted-output-wrapper');
+        const redactedJsonDisplay = document.getElementById('redacted-json-display');
+        
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingText = document.getElementById('loading-text');
+        
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalDrawer = document.getElementById('modal-drawer');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalBody = document.getElementById('modal-body');
+        
+        const btnApprove = document.getElementById('btn-approve');
+        const btnReject = document.getElementById('btn-reject');
+        const decisionBanner = document.getElementById('decision-banner');
+
+        const toastContainer = document.getElementById('toast-container');
+        const toastMessage = document.getElementById('toast-message');
+
+        // File Uploader Setup (Browse and Drag-and-Drop)
+        dropzone.addEventListener('click', () => fileInput.click());
+        
+        dropzone.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                fileInput.click();
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                handleFileSelection(e.target.files[0]);
+            }
+        });
+
+        // Drag & Drop handlers
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('dragover');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleFileSelection(e.dataTransfer.files[0]);
+            }
+        });
+
+        // File Selection Validator
+        function handleFileSelection(file) {
+            if (file && (file.type === "application/json" || file.name.endsWith('.json'))) {
+                selectedFile = file;
+                filenameDisplay.textContent = `Selected File: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+                filenameDisplay.style.display = 'inline-block';
+                btnRedact.removeAttribute('disabled');
+                
+                // Reset state for new files
+                btnUnderwrite.disabled = true;
+                document.getElementById('step-2-badge').classList.remove('active');
+                redactedOutputWrapper.style.display = 'none';
+                redactedJsonObj = null;
+                redactedJsonStr = "";
+            } else {
+                showToast("Invalid file format. Please upload a valid UK mortgage JSON factfind file.");
+            }
+        }
+
+        // HTML escaping helper to prevent script injection in raw print blocks
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Show Toast Notification
+        let toastTimeout = null;
+        function showToast(message) {
+            toastMessage.textContent = message;
+            clearTimeout(toastTimeout);
+            toastContainer.classList.add('show');
+            toastTimeout = setTimeout(() => {
+                toastContainer.classList.remove('show');
+            }, 4500);
+        }
+
+        // Step 1: POST to /api/redact
+        btnRedact.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            const originalBtnText = btnRedact.innerHTML;
+            btnRedact.innerHTML = '<span class="spinner-sm" aria-hidden="true"></span> Running Privacy Shield...';
+            btnRedact.disabled = true;
+            
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('/api/redact', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Sanitisation request failed. Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Store redacted data structures
+                redactedJsonObj = data;
+                redactedJsonStr = JSON.stringify(data, null, 2);
+
+                // Safely format the output, highlighting redactor [REDACTED_...] strings
+                const escapedPayload = escapeHtml(redactedJsonStr);
+                const highlightedPayload = escapedPayload.replace(
+                    /\[REDACTED_[A-Z]+\]/g, 
+                    '<span class="redacted-token" role="status">$&</span>'
+                );
+
+                redactedJsonDisplay.innerHTML = highlightedPayload;
+                redactedOutputWrapper.style.display = 'block';
+
+                // Activate Step 2
+                btnUnderwrite.removeAttribute('disabled');
+                document.getElementById('step-2-badge').classList.add('active');
+                
+                // Scroll page smoothly to show output
+                redactedOutputWrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            } catch (error) {
+                console.error("Redaction Error:", error);
+                showToast(`Privacy Shield Error: ${error.message}`);
+            } finally {
+                btnRedact.innerHTML = originalBtnText;
+                btnRedact.disabled = false;
+            }
+        });
+
+        // Step 2: POST to /api/underwrite
+        btnUnderwrite.addEventListener('click', async () => {
+            if (!redactedJsonStr) return;
+
+            // Trigger Overlay loading visual
+            loadingOverlay.style.display = 'flex';
+            
+            // Cycle status descriptions to make underwriting steps transparent
+            const loadingStatuses = [
+                "Classifying risk profile categorisation...",
+                "Analysing applicant monthly affordability...",
+                "Calculating Debt-to-Income (DTI) ratio...",
+                "Cross-referencing FCA rules handbook guidelines...",
+                "Evaluating compliance risk flags...",
+                "Assembling decision audit log..."
+            ];
+
+            let statusIdx = 0;
+            loadingText.textContent = loadingStatuses[statusIdx];
+            
+            statusCycleInterval = setInterval(() => {
+                statusIdx = (statusIdx + 1) % loadingStatuses.length;
+                loadingText.textContent = loadingStatuses[statusIdx];
+            }, 2500);
+
+            try {
+                // Send redacted payload structure string in compliance with FastAPI schema
+                const response = await fetch('/api/underwrite', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ redacted_json: redactedJsonStr })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Underwriting Swarm execution failed. Status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                // Stop loaders and render modal drawer
+                clearInterval(statusCycleInterval);
+                loadingOverlay.style.display = 'none';
+                
+                renderAuditDrawer(result);
+
+            } catch (error) {
+                console.error("Swarm Error:", error);
+                clearInterval(statusCycleInterval);
+                loadingOverlay.style.display = 'none';
+                showToast(`Swarm Execution Error: ${error.message}`);
+            }
+        });
+
+        // Dynamic Drawer Panel Renderer
+        function renderAuditDrawer(data) {
+            // Reset Human decision action state
+            btnApprove.style.display = 'inline-flex';
+            btnApprove.disabled = false;
+            btnApprove.innerHTML = '<span>Approve</span>';
+            
+            btnReject.style.display = 'inline-flex';
+            btnReject.disabled = false;
+            btnReject.innerHTML = '<span>Reject</span>';
+            
+            decisionBanner.style.display = 'none';
+
+            if (data.validated === false) {
+                // Render unvalidated fallback view gracefully
+                modalBody.innerHTML = `
+                    <div class="modal-row">
+                        <div class="modal-label" style="color: var(--color-danger);">Validation Warning</div>
+                        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); color: #f87171; border-radius: 10px; padding: 1rem; font-size: 0.9rem; line-height: 1.45;">
+                            <strong>Note:</strong> The multi-agent Compliance Swarm output failed to match the expected Pydantic schema structure. Below is the compliance agent's raw output.
+                        </div>
+                    </div>
+                    
+                    <div class="modal-row">
+                        <div class="modal-label">Raw Output</div>
+                        <pre class="json-pre-box" style="white-space: pre-wrap; word-break: break-all; max-height: 420px;">${escapeHtml(data.raw_output || "")}</pre>
+                    </div>
+
+                    ${data.error ? `
+                    <div class="modal-row">
+                        <div class="modal-label">Parser Exception Trace</div>
+                        <code style="font-family: monospace; font-size: 0.8rem; color: var(--color-danger); word-break: break-all;">${escapeHtml(data.error)}</code>
+                    </div>` : ''}
+                `;
+            } else {
+                // Render validated AuditLog structure fields
+                const decisionClass = getDecisionClass(data.decision);
+                const riskClass = getRiskClass(data.classification);
+                
+                let rulesListHtml = `<p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">No regulations cited.</p>`;
+                if (data.cited_rules && data.cited_rules.length > 0) {
+                    rulesListHtml = `
+                        <ul class="rules-list">
+                            ${data.cited_rules.map(rule => `<li>${escapeHtml(rule)}</li>`).join('')}
+                        </ul>
+                    `;
+                }
+
+                modalBody.innerHTML = `
+                    <div class="modal-row">
+                        <div class="modal-label">Underwriting Decision</div>
+                        <span class="chip ${decisionClass}">${escapeHtml(data.decision)}</span>
+                    </div>
+
+                    <div class="modal-row">
+                        <div class="modal-label">Risk Classification</div>
+                        <span class="chip ${riskClass}">${escapeHtml(data.classification)}</span>
+                    </div>
+
+                    <div class="modal-row">
+                        <div class="modal-label">Debt-To-Income (DTI) Ratio</div>
+                        <div style="font-size: 1.6rem; font-weight: 700; font-family: 'Outfit', sans-serif; color: var(--text-primary);">${data.dti_percent.toFixed(2)}%</div>
+                    </div>
+
+                    <div class="modal-row">
+                        <div class="modal-label">Cited FCA Handbook Rules</div>
+                        ${rulesListHtml}
+                    </div>
+
+                    <div class="modal-row">
+                        <div class="modal-label">Swarm Rationale</div>
+                        <p style="font-size: 0.95rem; line-height: 1.55; color: #cbd5e1; white-space: pre-wrap;">${escapeHtml(data.rationale)}</p>
+                    </div>
+                `;
+            }
+
+            // Open Drawer & Backdrop
+            modalDrawer.classList.add('open');
+            modalBackdrop.classList.add('open');
+            modalCloseBtn.focus();
+        }
+
+        // Chip color helpers
+        function getDecisionClass(decision) {
+            if (!decision) return 'amber';
+            const val = decision.toLowerCase();
+            if (val === 'pass') return 'green';
+            if (val === 'review') return 'amber';
+            if (val === 'fail') return 'red';
+            return 'amber';
+        }
+
+        // Risk class chip color helpers
+        function getRiskClass(classification) {
+            if (!classification) return 'amber';
+            const val = classification.toLowerCase();
+            if (val === 'standard') return 'green';
+            if (val.includes('high')) return 'amber';
+            return 'amber';
+        }
+
+        // Close Drawer logic
+        function closeDrawer() {
+            modalDrawer.classList.remove('open');
+            modalBackdrop.classList.remove('open');
+            btnUnderwrite.focus();
+        }
+
+        modalCloseBtn.addEventListener('click', closeDrawer);
+        modalBackdrop.addEventListener('click', closeDrawer);
+
+        // Escape key close handler
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modalDrawer.classList.contains('open')) {
+                closeDrawer();
+            }
+        });
+
+        // Human Sign-off Verification Handlers
+        async function recordDecision(approved) {
+            btnApprove.disabled = true;
+            btnReject.disabled = true;
+            
+            const targetBtn = approved ? btnApprove : btnReject;
+            const originalHtml = targetBtn.innerHTML;
+            targetBtn.innerHTML = '<span class="spinner-sm" aria-hidden="true"></span> Recording...';
+
+            // Simulate minor API persistence latency (local-only as per specs)
+            await new Promise(resolve => setTimeout(resolve, 800));
+
+            // Hide the active buttons
+            btnApprove.style.display = 'none';
+            btnReject.style.display = 'none';
+
+            // Render Decision Timestamp Confirmation
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const dateStr = now.toLocaleDateString('en-GB');
+
+            if (approved) {
+                decisionBanner.className = 'decision-banner approved';
+                decisionBanner.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0;">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    <span><strong>Decision Recorded:</strong> Approved by underwriter at ${timeStr} on ${dateStr}</span>
+                `;
+            } else {
+                decisionBanner.className = 'decision-banner rejected';
+                decisionBanner.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0;">
+                        <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
+                    <span><strong>Decision Recorded:</strong> Rejected by underwriter at ${timeStr} on ${dateStr}</span>
+                `;
+            }
+            decisionBanner.style.display = 'flex';
+        }
+
+        btnApprove.addEventListener('click', () => recordDecision(true));
+        btnReject.addEventListener('click', () => recordDecision(false));
+    </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+{
+  "personal_details": {
+    "title": "Mr",
+    "forename": "Ebenezer",
+    "surname": "Scrooge",
+    "previous_name": "",
+    "date_of_birth": "1975-12-25",
+    "sex": "Male",
+    "marital_status": "Single",
+    "nationality": "British",
+    "residency_status": "UK Resident",
+    "intended_retirement_age": 70,
+    "national_insurance_number": "QQ987654D",
+    "number_of_dependants": 0
+  },
+  "contact_details": {
+    "mobile_telephone": "07700900088",
+    "email": "scrooge@countinghouse.co.uk",
+    "current_address": "3 Exchange Alley, London",
+    "postcode": "EC3V 3PD",
+    "residential_status": "owner",
+    "time_at_address_years": 15.0
+  },
+  "bank_details": {
+    "bank_name": "Bank of England",
+    "account_number": "11223344",
+    "sort_code": "40-50-60",
+    "account_holder_name": "Ebenezer Scrooge"
+  },
+  "employment": {
+    "employment_status": "Self-Employed",
+    "occupation": "Managing Director",
+    "employer_name": "Scrooge & Marley Ltd",
+    "time_in_role_years": 10.0,
+    "self_employment": {
+      "business_name": "Scrooge & Marley Counting House",
+      "trading_style": "Ltd Co",
+      "percent_shareholding": 100.0,
+      "years_trading": 10.0
+    }
+  },
+  "income": {
+    "gross_basic_income": 12000.0,
+    "guaranteed_overtime_bonus_commission": 0.0,
+    "variable_overtime_bonus_commission": 48000.0,
+    "other_income": 0.0,
+    "other_income_source": ""
+  },
+  "monthly_commitments": [
+    {
+      "provider": "HSBC",
+      "commitment_type": "Credit card",
+      "balance_outstanding": 3000.0,
+      "monthly_repayment": 400.0,
+      "repay_on_completion": false
+    },
+    {
+      "provider": "Halifax",
+      "commitment_type": "Loan",
+      "balance_outstanding": 15000.0,
+      "monthly_repayment": 700.0,
+      "repay_on_completion": false
+    },
+    {
+      "provider": "BMW Financial Services",
+      "commitment_type": "Hire purchase",
+      "balance_outstanding": 25000.0,
+      "monthly_repayment": 800.0,
+      "repay_on_completion": false
+    }
+  ],
+  "adverse_credit": {
+    "adverse_credit_flags": [
+      "recent_late_payment"
+    ]
+  },
+  "vulnerability": {
+    "vulnerability_flags": [
+      "recent_bereavement"
+    ]
+  },
+  "property": {
+    "address": "45 Regent Park Gardens, London",
+    "postcode": "NW1 4RX",
+    "value": 850000.0,
+    "purchase_price": 850000.0,
+    "tenure": "Freehold",
+    "property_type": "House",
+    "deposit_amount": 250000.0,
+    "deposit_source": "Savings"
+  },
+  "mortgage_requirements": {
+    "purpose": "Home mover",
+    "loan_amount": 600000.0,
+    "term_years": 25,
+    "repayment_method": "Capital repayment"
+  }
+}
