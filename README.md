@@ -59,7 +59,7 @@ graph TD
         FAPIServer["Async FastAPI Backend<br><i>(main.py)</i>"]
     end
     
-    subgraph Swarm ["Sequential Agent Swarm (google-adk / Vertex AI)"]
+    subgraph Swarm ["Agent Swarm (Vertex AI)"]
         Orchestrator["Orchestrator Agent<br><i>(Risk Routing & Classification)</i>"]:::agent
         Analyst["Analyst Agent<br><i>(Financial & Affordability Checks)</i>"]:::agent
         Compliance["Compliance Agent<br><i>(Handbook Audit & Log Generation)</i>"]:::agent
@@ -68,7 +68,7 @@ graph TD
         Analyst -->|4. Analyze Affordability| Compliance
     end
 
-    subgraph MCPServer ["Out-of-Process MCP Server (FastMCP / stdio)"]
+    subgraph MCPServer ["MCP Server (stdio)"]
         AffordabilityTool["calculate_affordability<br><i>(DTI & Band Math)</i>"]:::tool
         FCATool["query_fca_handbook<br><i>(Mock Handbook Citations)</i>"]:::tool
     end
