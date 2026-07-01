@@ -34,27 +34,63 @@ The system consists of the following components:
 
 ---
 
-## 4. Mermaid Flowchart
+## 4. Architecture Flowchart
 
 ```mermaid
 graph TD
-    UserJSON[User Applicant JSON] --> PrivacyShield[Privacy Shield Gateway]
+    %% Define color palette and styles
+    classDef default fill:#1e293b,stroke:#334155,stroke-width:1px,color:#f8fafc;
+    classDef client fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#38bdf8;
+    classDef gateway fill:#881337,stroke:#f43f5e,stroke-width:2px,color:#fda4af;
+    classDef agent fill:#0369a1,stroke:#0ea5e9,stroke-width:2px,color:#e0f2fe;
+    classDef tool fill:#78350f,stroke:#d97706,stroke-width:2px,color:#fef3c7;
+    classDef data fill:#14532d,stroke:#22c55e,stroke-width:1px,color:#dcfce7;
     
-    subgraph Root Agent Swarm
-        PrivacyShield -->|Redacted Payload| Orchestrator[Orchestrator Agent]
-        Orchestrator -->|classify_application_risk| RiskTool[Risk Routing Tool]
-        RiskTool -->|Classification & Reasons| Analyst[Analyst Agent]
-        
-        Analyst -->|calculate_affordability| AffordabilityTool[Affordability Tool]
-        AffordabilityTool -->|DTI % & Decision| Compliance[Compliance Agent]
-        
-        Compliance -->|query_fca_handbook| FCATool[FCA Handbook Tool]
-        FCATool -->|Regulatory Citations| FinalResponse[Compliance Audit Log]
+    %% Nodes definition
+    UserJSON[("Raw Applicant JSON")]:::data
+    PrivacyShield["GDPR Privacy Shield<br><i>(Microsoft Presidio)</i>"]:::gateway
+    
+    subgraph UI ["Client Interface"]
+        WebDashboard["Sleek Single-Page Dashboard<br><i>(HTML5/CSS3)</i>"]:::client
+        HumanDecision["Human Underwriter Sign-off<br><i>(Final Decision Gate)</i>"]:::client
     end
     
-    FinalResponse --> FastAPI[FastAPI Dashboard Backend]
-    FastAPI --> WebDashboard[Web Dashboard UI]
-    WebDashboard --> HumanDecision[Human Underwriter Decision]
+    subgraph FastAPIApp ["FastAPI Web Server"]
+        FAPIServer["Async FastAPI Backend<br><i>(main.py)</i>"]
+    end
+    
+    subgraph Swarm ["Sequential Agent Swarm (google-adk / Vertex AI)"]
+        Orchestrator["Orchestrator Agent<br><i>(Risk Routing & Classification)</i>"]:::agent
+        Analyst["Analyst Agent<br><i>(Financial & Affordability Checks)</i>"]:::agent
+        Compliance["Compliance Agent<br><i>(Handbook Audit & Log Generation)</i>"]:::agent
+        
+        Orchestrator -->|2. Route Profile| Analyst
+        Analyst -->|4. Analyze Affordability| Compliance
+    end
+
+    subgraph MCPServer ["Out-of-Process MCP Server (FastMCP / stdio)"]
+        AffordabilityTool["calculate_affordability<br><i>(DTI & Band Math)</i>"]:::tool
+        FCATool["query_fca_handbook<br><i>(Mock Handbook Citations)</i>"]:::tool
+    end
+
+    subgraph DirectTools ["Direct Python Tools"]
+        RiskTool["classify_application_risk<br><i>(Deterministic Risk Routing)</i>"]:::tool
+    end
+
+    %% Flows and connections
+    WebDashboard -->|1. Upload payload| FAPIServer
+    FAPIServer -->|JSON Payload| PrivacyShield
+    PrivacyShield -->|Anonymized JSON| Orchestrator
+    
+    %% Tool execution links
+    Orchestrator <-->|Direct call| RiskTool
+    Analyst <-->|MCP ClientRequest (stdio)| AffordabilityTool
+    Compliance <-->|MCP ClientRequest (stdio)| FCATool
+    
+    %% Responses
+    Compliance -->|5. Return audit log JSON| FAPIServer
+    FAPIServer -->|Render logs & visual bands| WebDashboard
+    WebDashboard -->|6. Approve / Refer| HumanDecision
 ```
 
 ---
