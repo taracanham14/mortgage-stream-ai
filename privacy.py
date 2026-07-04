@@ -229,7 +229,32 @@ def scrub_application_data(raw_json_string: str) -> str:
 
             def walk_and_scrub(data):
                 if isinstance(data, dict):
-                    return {k: walk_and_scrub(v) for k, v in data.items()}
+                    redacted_dict = {}
+                    for key, val in data.items():
+                        key_lower = key.lower()
+                        if key_lower in ("applicant_name", "name", "full_name", "forename", "surname", "previous_name", "maiden_name", "account_holder_name"):
+                            redacted_dict[key] = "[REDACTED_NAME]"
+                        elif key_lower == "title":
+                            redacted_dict[key] = "[REDACTED_TITLE]"
+                        elif key_lower in ("national_insurance_number", "nino"):
+                            redacted_dict[key] = "[REDACTED_NINO]"
+                        elif key_lower in ("bank_account", "account_number"):
+                            redacted_dict[key] = "[REDACTED_ACCOUNT]"
+                        elif key_lower == "sort_code":
+                            redacted_dict[key] = "[REDACTED_SORTCODE]"
+                        elif key_lower in ("date_of_birth", "dob"):
+                            redacted_dict[key] = "[REDACTED_DOB]"
+                        elif key_lower in ("current_address", "address"):
+                            redacted_dict[key] = "[REDACTED_ADDRESS]"
+                        elif key_lower == "postcode":
+                            redacted_dict[key] = "[REDACTED_POSTCODE]"
+                        elif key_lower == "email":
+                            redacted_dict[key] = "[REDACTED_EMAIL]"
+                        elif key_lower in ("mobile_telephone", "telephone", "phone"):
+                            redacted_dict[key] = "[REDACTED_PHONE]"
+                        else:
+                            redacted_dict[key] = walk_and_scrub(val)
+                    return redacted_dict
                 elif isinstance(data, list):
                     return [walk_and_scrub(item) for item in data]
                 elif isinstance(data, str):
