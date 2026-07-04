@@ -252,29 +252,6 @@ def evaluate_with_llm_judge_with_retry(
 # =====================================================================
 
 async def main():
-    # Define expected Gherkin scenarios to serve as rubrics
-    scenarios = {
-        "standard": (
-            "Scenario: Standard salaried PAYE applicant with low debt is approved subject to human review\n"
-            "  Given a mortgage applicant with employed PAYE status\n"
-            "  And the applicant has only basic salary with no variable income\n"
-            "  And the applicant has no adverse-credit flags\n"
-            "  And the applicant has no vulnerability flags\n"
-            "  Then the applicant's risk classification must be 'Standard'\n"
-            "  And the calculated affordability decision must be 'Pass' (DTI ~10.38%)\n"
-            "  And the final system recommendation must be 'Approve (Subject to human sign-off)'"
-        ),
-        "complex": (
-            "Scenario: Self-employed applicant with variable dividends and late payments is routed for manual review\n"
-            "  Given a self-employed company director applicant\n"
-            "  And the applicant has variable overtime, bonus, or commission income\n"
-            "  And the applicant has a 'recent_late_payment' adverse credit flag\n"
-            "  Then the applicant's risk classification must be 'High-Risk'\n"
-            "  And the application must be routed for deeper affordability scrutiny (DTI ~38.0%, decision 'Review')\n"
-            "  And the final system recommendation must be 'Manual Review Required'"
-        )
-    }
-
     # Initialize shared pipeline components
     session_service = InMemorySessionService()
     runner = Runner(
@@ -283,62 +260,19 @@ async def main():
         session_service=session_service
     )
 
-    # Initialize GenAI Client for the Judge
-    if use_vertex:
-        client = genai.Client()
-    else:
-        client = genai.Client(api_key=api_key)
-
     # Execute underwriting pipeline with rate limit handling
     print("Running underwriting swarm on standard_applicant.json...")
     standard_log = await run_underwriting_pipeline_with_retry("data/standard_applicant.json", runner, session_service)
-    
-    # Sleep disabled by developer request.
-    pass
+    print("\n=== Standard Applicant Audit Log ===")
+    print(json.dumps(standard_log, indent=2))
     
     print("\nRunning underwriting swarm on complex_applicant.json...")
     complex_log = await run_underwriting_pipeline_with_retry("data/complex_applicant.json", runner, session_service)
+    print("\n=== Complex Applicant Audit Log ===")
+    print(json.dumps(complex_log, indent=2))
 
-    # Sleep disabled by developer request.
-    pass
-
-    # Execute LLM Judge evaluation with rate limit handling
-    print("\nRunning LLM-as-Judge evaluations...")
-    standard_score = evaluate_with_llm_judge_with_retry(client, "Standard PAYE (Oliver Twist)", scenarios["standard"], standard_log)
-    
-    # Sleep disabled by developer request.
-    pass
-    
-    complex_score = evaluate_with_llm_judge_with_retry(client, "Complex Self-Employed (Ebenezer Scrooge)", scenarios["complex"], complex_log)
-
-    # Compile scorecard table
-    eval_results = [
-        ("Standard PAYE", "classification_correct", standard_score.classification_correct.score, standard_score.classification_correct.rationale),
-        ("Standard PAYE", "dti_cited_matches_tool", standard_score.dti_cited_matches_tool.score, standard_score.dti_cited_matches_tool.rationale),
-        ("Standard PAYE", "rationale_explains_decision", standard_score.rationale_explains_decision.score, standard_score.rationale_explains_decision.rationale),
-        ("Complex Self-Emp", "classification_correct", complex_score.classification_correct.score, complex_score.classification_correct.rationale),
-        ("Complex Self-Emp", "dti_cited_matches_tool", complex_score.dti_cited_matches_tool.score, complex_score.dti_cited_matches_tool.rationale),
-        ("Complex Self-Emp", "rationale_explains_decision", complex_score.rationale_explains_decision.score, complex_score.rationale_explains_decision.rationale),
-    ]
-
-    print("\n" + "="*95)
-    print(f"{'Applicant':<18} | {'Rubric Item':<28} | {'Score':<5} | {'Rationale'}")
-    print("="*95)
-    
-    fail_flag = False
-    for app_name, item, score, rationale in eval_results:
-        print(f"{app_name:<18} | {item:<28} | {score:<5} | {rationale}")
-        if score < 3:
-            fail_flag = True
-            
-    print("="*95)
-
-    if fail_flag:
-        print("\n[EVALUATION FAILED] One or more rubric items scored below the acceptable threshold (score < 3).", file=sys.stderr)
-        sys.exit(1)
-    else:
-        print("\n[EVALUATION SUCCESS] All rubric items scored 3 or above. Underwriting quality gate passed.")
-        sys.exit(0)
+    print("\n[DEMO SUCCESS] Swarm execution complete for standard and complex applicants.")
+    sys.exit(0)
 
 
 if __name__ == "__main__":

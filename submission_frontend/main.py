@@ -51,14 +51,7 @@ app = FastAPI(
     description="Underwriting pre-qualification dashboard powered by Google ADK multi-agent swarm."
 )
 
-# Instantiate the shared Session Service and Runner.
-# The session service manages conversation state in-memory across the multi-agent pipeline.
-session_service = InMemorySessionService()
-runner = Runner(
-    agent=root_agent,
-    app_name="mortgagestream",
-    session_service=session_service
-)
+# Session Service and Runner are instantiated locally per request to guarantee isolation.
 
 # Mount the static files directory containing dashboard assets (CSS, JS, index.html)
 app.mount("/static", StaticFiles(directory="submission_frontend/static"), name="static")
@@ -117,6 +110,12 @@ async def run_underwriting(req: UnderwriteRequest):
     and returns a validated or raw compliance audit log.
     """
     session_id = str(uuid.uuid4())
+    session_service = InMemorySessionService()
+    runner = Runner(
+        agent=root_agent,
+        app_name="mortgagestream",
+        session_service=session_service
+    )
     
     # Create a fresh agent session for the underwriter persona
     await session_service.create_session(
