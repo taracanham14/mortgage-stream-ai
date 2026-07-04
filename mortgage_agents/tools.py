@@ -195,11 +195,7 @@ def classify_application_risk(
             - 'classification' (str): Either 'Standard' or 'High-Risk'.
             - 'reasons' (list of str): Detailed list of the rules that triggered the classification.
     """
-    import os
-    import time
-    if os.environ.get("MORTGAGESTREAM_SLOW_TOOLS") == "1":
-        # Sleep for 30 seconds to stay under the 5 RPM rate limit
-        time.sleep(30)
+    # Rate limit sleep disabled by developer request to speed up underwriting swarm.
 
     reasons = []
     

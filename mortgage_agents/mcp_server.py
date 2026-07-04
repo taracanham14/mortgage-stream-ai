@@ -50,10 +50,7 @@ async def calculate_affordability(
         monthly_commitments: List of monthly commitments. Can be a list of numbers or 
             a list of dictionaries containing a 'monthly_repayment' key.
     """
-    import asyncio
-    if os.environ.get("MORTGAGESTREAM_SLOW_TOOLS") == "1":
-        # Sleep asynchronously to avoid blocking the MCP server's stdio event loop
-        await asyncio.sleep(30)
+    # Rate limit sleep disabled by developer request to speed up underwriting swarm.
         
     # Execute the deterministic affordability calculation from tools.py
     return tools.calculate_affordability(
@@ -75,10 +72,7 @@ async def query_fca_handbook(keyword: str) -> dict:
     Args:
         keyword: The search keyword (e.g., 'self_employed', 'vulnerability', 'affordability', 'consumer_duty', 'adverse_credit').
     """
-    import asyncio
-    if os.environ.get("MORTGAGESTREAM_SLOW_TOOLS") == "1":
-        # Sleep asynchronously to avoid blocking the MCP server's stdio event loop
-        await asyncio.sleep(30)
+    # Rate limit sleep disabled by developer request to speed up underwriting swarm.
         
     # Execute the deterministic FCA Handbook query from tools.py
     return tools.query_fca_handbook(keyword=keyword)

@@ -50,10 +50,8 @@ if project_root not in sys.path:
 # Load environment variables (populates GOOGLE_API_KEY from .env if present in workspace)
 load_dotenv()
 
-# Force tools to run slowly to stay under the 5 RPM rate limit of the Gemini free tier if not using Vertex AI
+# Rate limiting sleep settings disabled by developer request.
 use_vertex = os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").upper() == "TRUE"
-if not use_vertex:
-    os.environ["MORTGAGESTREAM_SLOW_TOOLS"] = "1"
 
 from privacy import scrub_application_data
 from mortgage_agents.agent import root_agent
@@ -295,26 +293,21 @@ async def main():
     print("Running underwriting swarm on standard_applicant.json...")
     standard_log = await run_underwriting_pipeline_with_retry("data/standard_applicant.json", runner, session_service)
     
-    # Sleep to fully replenish the rate limit bucket if not using Vertex AI
-    if not use_vertex:
-        print("\nSleeping 90 seconds to clear Gemini free-tier rate limits...")
-        await asyncio.sleep(90)
+    # Sleep disabled by developer request.
+    pass
     
     print("\nRunning underwriting swarm on complex_applicant.json...")
     complex_log = await run_underwriting_pipeline_with_retry("data/complex_applicant.json", runner, session_service)
 
-    # Sleep to fully replenish the rate limit bucket before judge runs if not using Vertex AI
-    if not use_vertex:
-        print("\nSleeping 90 seconds to clear Gemini free-tier rate limits...")
-        await asyncio.sleep(90)
+    # Sleep disabled by developer request.
+    pass
 
     # Execute LLM Judge evaluation with rate limit handling
     print("\nRunning LLM-as-Judge evaluations...")
     standard_score = evaluate_with_llm_judge_with_retry(client, "Standard PAYE (Oliver Twist)", scenarios["standard"], standard_log)
     
-    if not use_vertex:
-        print("\nSleeping 90 seconds to clear Gemini free-tier rate limits...")
-        await asyncio.sleep(90)
+    # Sleep disabled by developer request.
+    pass
     
     complex_score = evaluate_with_llm_judge_with_retry(client, "Complex Self-Employed (Ebenezer Scrooge)", scenarios["complex"], complex_log)
 
