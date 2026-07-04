@@ -54,14 +54,14 @@ server_script = os.path.abspath(os.path.join(os.path.dirname(__file__), "mcp_ser
 # Setup connection parameters to launch the MCP server as a subprocess.
 # We run using sys.executable (python.exe) and inherit environment variables
 # so PYTHONPATH and virtual environment packages are preserved.
-# We set timeout=60.0 to accommodate rate-limiting delays.
+# We set timeout=120.0 to accommodate rate-limiting delays and avoid timeouts.
 connection_params = StdioConnectionParams(
     server_params=StdioServerParameters(
         command=sys.executable,
         args=[server_script],
         env=dict(os.environ)
     ),
-    timeout=60.0
+    timeout=120.0
 )
 
 # Connect to the local MCP server, filtering tools specifically for each agent.
