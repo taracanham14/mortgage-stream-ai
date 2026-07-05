@@ -16,7 +16,7 @@ Furthermore, under the **FCA Consumer Duty (Principle 12)** and **MCOB guideline
 
 MortgageStream AI solves this by deploying a **dual-workforce agentic architecture**:
 1. **Deterministic Safeguards**: Mathematical computations, risk-routing decisions, and FCA Handbook query checks are implemented strictly in deterministic Python code as tools.
-2. **Generative Swarm Pipeline**: специализированные agents process, inspect, and evaluate the application sequentially to extract insights and generate human-readable compliance explanations.
+2. **Generative Swarm Pipeline**: Agents process, inspect, and evaluate the application sequentially to extract insights and generate human-readable compliance explanations.
 3. **Human-in-the-Loop**: The swarm does not make the final credit decision. It generates a structured pre-qualification recommendation and compliance audit log, leaving the final sign-off to a human underwriter.
 
 ---
